@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PopUp Karaoke | NW Indiana & Chicago's Premier Mobile Karaoke</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --purple-300: #d8b4fe;
+      --purple-400: #c084fc;
+      --purple-500: #a855f7;
+      --purple-600: #9333ea;
+      --purple-700: #7c3aed;
+      --dark-bg: #030108;
+      --dark-surface: #0a0510;
+      --dark-card: #120a1f;
+      --text-primary: #ffffff;
+      --text-secondary: rgba(255, 255, 255, 0.65);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Outfit', sans-serif; background: var(--dark-bg); color: var(--text-primary); overflow-x: hidden; line-height: 1.6; }
+
+    /* Animated Background */
+    .bg-animation { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; overflow: hidden; }
+    .bg-animation::before { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: radial-gradient(ellipse 80% 50% at 20% 40%, rgba(168, 85, 247, 0.15) 0%, transparent 50%), radial-gradient(ellipse 60% 80% at 80% 20%, rgba(139, 92, 246, 0.1) 0%, transparent 50%), radial-gradient(ellipse 50% 50% at 50% 80%, rgba(192, 132, 252, 0.08) 0%, transparent 50%); animation: bgShift 20s ease-in-out infinite; }
+    .orb { position: absolute; border-radius: 50%; filter: blur(80px); animation: orbFloat 15s ease-in-out infinite; }
+    .orb-1 { width: 600px; height: 600px; background: radial-gradient(circle, rgba(147, 51, 234, 0.3) 0%, transparent 70%); top: -200px; left: -200px; }
+    .orb-2 { width: 500px; height: 500px; background: radial-gradient(circle, rgba(192, 132, 252, 0.2) 0%, transparent 70%); bottom: -150px; right: -150px; animation-delay: -5s; }
+    .orb-3 { width: 400px; height: 400px; background: radial-gradient(circle, rgba(168, 85, 247, 0.25) 0%, transparent 70%); top: 50%; left: 50%; transform: translate(-50%, -50%); animation-delay: -10s; }
+    @keyframes bgShift { 0%, 100% { opacity: 1; } 50% { opacity: 0.8; } }
+    @keyframes orbFloat { 0%, 100% { transform: translate(0, 0) scale(1); } 25% { transform: translate(30px, -30px) scale(1.05); } 50% { transform: translate(-20px, 20px) scale(0.95); } 75% { transform: translate(20px, 10px) scale(1.02); } }
+    .grid-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-image: linear-gradient(rgba(168, 85, 247, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(168, 85, 247, 0.03) 1px, transparent 1px); background-size: 60px 60px; z-index: -1; pointer-events: none; }
+
+    /* Navigation */
+    nav { position: fixed; top: 0; left: 0; right: 0; z-index: 1000; padding: 1rem 2rem; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+    nav.scrolled { background: rgba(3, 1, 8, 0.85); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(168, 85, 247, 0.1); }
+    .nav-container { max-width: 1400px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
+    .logo-img { height: 55px; width: auto; transition: all 0.4s ease; filter: drop-shadow(0 0 20px rgba(168, 85, 247, 0.4)); }
+    .logo-img:hover { transform: scale(1.08) rotate(-2deg); filter: drop-shadow(0 0 30px rgba(168, 85, 247, 0.6)); }
+    .nav-links { display: flex; gap: 0.5rem; list-style: none; align-items: center; }
+    .nav-links a { color: var(--text-secondary); text-decoration: none; font-weight: 500; font-size: 0.9rem; padding: 0.6rem 1.2rem; border-radius: 100px; transition: all 0.3s ease; }
+    .nav-links a:hover { color: var(--text-primary); background: rgba(168, 85, 247, 0.1); }
+    .nav-cta { background: linear-gradient(135deg, var(--purple-600), var(--purple-500)) !important; color: white !important; font-weight: 600 !important; box-shadow: 0 4px 20px rgba(168, 85, 247, 0.4), inset 0 1px 0 rgba(255,255,255,0.1); }
+    .nav-cta:hover { transform: translateY(-2px) !important; box-shadow: 0 8px 30px rgba(168, 85, 247, 0.5) !important; }
+    .mobile-menu { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 10px; z-index: 1001; }
+    .mobile-menu span { width: 28px; height: 2px; background: var(--purple-400); transition: all 0.3s ease; border-radius: 2px; }
+
+    /* Hero Section */
+    .hero { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 8rem 2rem 4rem; position: relative; overflow: hidden; }
+    .hero-content { text-align: center; max-width: 1000px; z-index: 1; }
+    .hero-badge { display: inline-flex; align-items: center; gap: 0.75rem; padding: 0.6rem 1.5rem; background: rgba(168, 85, 247, 0.1); border: 1px solid rgba(168, 85, 247, 0.2); border-radius: 100px; font-size: 0.85rem; font-weight: 500; color: var(--purple-300); margin-bottom: 2rem; backdrop-filter: blur(10px); animation: fadeInUp 0.8s ease forwards, pulse 3s ease-in-out infinite; opacity: 0; }
+    .hero-badge::before { content: ''; width: 8px; height: 8px; background: var(--purple-400); border-radius: 50%; animation: blink 2s ease-in-out infinite; }
+    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+    @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(168, 85, 247, 0.2); } 50% { box-shadow: 0 0 0 10px rgba(168, 85, 247, 0); } }
+    .hero h1 { font-family: 'Outfit', sans-serif; font-size: clamp(3.5rem, 12vw, 9rem); font-weight: 900; line-height: 0.95; letter-spacing: -3px; margin-bottom: 1.5rem; animation: fadeInUp 0.8s ease 0.2s forwards; opacity: 0; }
+    .hero h1 .line-1 { display: block; background: linear-gradient(135deg, #fff 0%, var(--purple-200) 50%, var(--purple-400) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .hero h1 .line-2 { display: block; background: linear-gradient(135deg, var(--purple-400), var(--purple-500), var(--purple-600)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; animation: gradientShift 5s ease infinite; background-size: 200% 200%; }
+    @keyframes gradientShift { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+    .hero-description { font-size: 1.25rem; color: var(--text-secondary); max-width: 600px; margin: 0 auto 3rem; animation: fadeInUp 0.8s ease 0.4s forwards; opacity: 0; line-height: 1.7; }
+    .hero-buttons { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; animation: fadeInUp 0.8s ease 0.6s forwards; opacity: 0; }
+    .btn { padding: 1rem 2.5rem; border-radius: 100px; font-weight: 600; font-size: 1rem; text-decoration: none; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; border: none; position: relative; overflow: hidden; }
+    .btn-primary { background: linear-gradient(135deg, var(--purple-600), var(--purple-500)); color: white; box-shadow: 0 4px 30px rgba(168, 85, 247, 0.4), inset 0 1px 0 rgba(255,255,255,0.1); }
+    .btn-primary::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent); transition: left 0.5s ease; }
+    .btn-primary:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 10px 40px rgba(168, 85, 247, 0.5); }
+    .btn-primary:hover::before { left: 100%; }
+    .btn-secondary { background: rgba(168, 85, 247, 0.1); color: var(--purple-300); border: 1px solid rgba(168, 85, 247, 0.3); backdrop-filter: blur(10px); }
+    .btn-secondary:hover { background: rgba(168, 85, 247, 0.2); border-color: var(--purple-400); color: white; transform: translateY(-3px); box-shadow: 0 10px 40px rgba(168, 85, 247, 0.2); }
+    .floating-element { position: absolute; font-size: 4rem; opacity: 0.15; animation: floatRandom 8s ease-in-out infinite; pointer-events: none; }
+    .floating-element:nth-child(1) { left: 5%; top: 20%; }
+    .floating-element:nth-child(2) { right: 8%; top: 25%; animation-delay: -2s; font-size: 3rem; }
+    .floating-element:nth-child(3) { left: 10%; bottom: 25%; animation-delay: -4s; font-size: 5rem; }
+    .floating-element:nth-child(4) { right: 5%; bottom: 20%; animation-delay: -6s; }
+    @keyframes floatRandom { 0%, 100% { transform: translateY(0) rotate(0deg); } 25% { transform: translateY(-20px) rotate(5deg); } 50% { transform: translateY(10px) rotate(-5deg); } 75% { transform: translateY(-15px) rotate(3deg); } }
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* Stats Section */
+    .stats { padding: 6rem 2rem; position: relative; }
+    .stats::before { content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 80%; height: 1px; background: linear-gradient(90deg, transparent, var(--purple-600), transparent); }
+    .stats-container { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: repeat(4, 1fr); gap: 2rem; }
+    .stat-item { text-align: center; padding: 2.5rem 1.5rem; border-radius: 24px; background: rgba(18, 10, 31, 0.6); border: 1px solid rgba(168, 85, 247, 0.1); backdrop-filter: blur(10px); transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); position: relative; overflow: hidden; }
+    .stat-item::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--purple-500), transparent); opacity: 0; transition: opacity 0.4s ease; }
+    .stat-item:hover { transform: translateY(-8px); border-color: rgba(168, 85, 247, 0.3); box-shadow: 0 20px 60px rgba(168, 85, 247, 0.15); }
+    .stat-item:hover::before { opacity: 1; }
+    .stat-number { font-family: 'Space Grotesk', sans-serif; font-size: 3.5rem; font-weight: 700; background: linear-gradient(135deg, var(--purple-300), var(--purple-500)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; line-height: 1; margin-bottom: 0.75rem; }
+    .stat-label { color: var(--text-secondary); font-size: 0.9rem; font-weight: 500; text-transform: uppercase; letter-spacing: 2px; }
+
+    /* Section Styling */
+    .section-label { display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: var(--purple-400); margin-bottom: 1rem; }
+    .section-label::before, .section-label::after { content: ''; width: 30px; height: 1px; background: var(--purple-500); }
+    .section-title { font-family: 'Outfit', sans-serif; font-size: clamp(2.5rem, 5vw, 4rem); font-weight: 800; letter-spacing: -1px; margin-bottom: 1.5rem; line-height: 1.1; }
+
+    /* About Section */
+    .about { padding: 8rem 2rem; position: relative; }
+    .about-container { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 6rem; align-items: center; }
+    .about-visual { position: relative; height: 550px; }
+    .about-card { position: absolute; padding: 2rem; border-radius: 24px; background: rgba(18, 10, 31, 0.8); border: 1px solid rgba(168, 85, 247, 0.15); backdrop-filter: blur(20px); transition: all 0.4s ease; }
+    .about-card:hover { border-color: rgba(168, 85, 247, 0.4); box-shadow: 0 20px 60px rgba(168, 85, 247, 0.2); }
+    .about-card-1 { top: 0; left: 0; width: 280px; animation: cardFloat1 10s ease-in-out infinite; }
+    .about-card-2 { bottom: 0; right: 0; width: 300px; animation: cardFloat2 10s ease-in-out infinite; }
+    .about-card-3 { top: 50%; left: 50%; transform: translate(-50%, -50%); width: 180px; text-align: center; background: linear-gradient(135deg, var(--purple-600), var(--purple-500)); border: none; box-shadow: 0 20px 60px rgba(168, 85, 247, 0.4); }
+    @keyframes cardFloat1 { 0%, 100% { transform: translateY(0) rotate(-1deg); } 50% { transform: translateY(-20px) rotate(1deg); } }
+    @keyframes cardFloat2 { 0%, 100% { transform: translateY(0) rotate(1deg); } 50% { transform: translateY(-15px) rotate(-1deg); } }
+    .about-card h4 { font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--purple-300); }
+    .about-card-3 h4 { color: white; font-size: 2.5rem; font-family: 'Space Grotesk', sans-serif; }
+    .about-card p { color: var(--text-secondary); font-size: 0.9rem; line-height: 1.6; }
+    .about-card-3 p { color: rgba(255, 255, 255, 0.9); }
+    .about-text p { color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 1.1rem; line-height: 1.8; }
+    .feature-list { list-style: none; margin-top: 2.5rem; display: grid; gap: 1rem; }
+    .feature-list li { display: flex; align-items: center; gap: 1rem; padding: 1rem 1.25rem; background: rgba(168, 85, 247, 0.05); border: 1px solid rgba(168, 85, 247, 0.1); border-radius: 16px; transition: all 0.3s ease; }
+    .feature-list li:hover { background: rgba(168, 85, 247, 0.1); border-color: rgba(168, 85, 247, 0.2); transform: translateX(10px); }
+    .feature-icon { width: 45px; height: 45px; border-radius: 12px; background: linear-gradient(135deg, var(--purple-600), var(--purple-500)); display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0; }
+
+    /* Events Section */
+    .events { padding: 8rem 2rem; background: linear-gradient(180deg, var(--dark-bg) 0%, var(--dark-surface) 50%, var(--dark-bg) 100%); position: relative; }
+    .events::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--purple-600), transparent); }
+    .events-container { max-width: 1100px; margin: 0 auto; }
+    .events-header { text-align: center; margin-bottom: 4rem; }
+    .events-subtitle { color: var(--text-secondary); font-size: 1.15rem; max-width: 500px; margin: 0 auto; }
+    .events-calendar { position: relative; border-radius: 32px; overflow: hidden; margin-bottom: 3rem; }
+    .events-calendar::before { content: ''; position: absolute; inset: 0; border-radius: 32px; padding: 2px; background: linear-gradient(135deg, var(--purple-500), var(--purple-700), var(--purple-500)); -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none; z-index: 1; }
+    .events-calendar::after { content: ''; position: absolute; inset: 0; border-radius: 32px; box-shadow: 0 30px 80px rgba(168, 85, 247, 0.25), inset 0 0 60px rgba(168, 85, 247, 0.05); pointer-events: none; }
+    .calendar-video { width: 100%; display: block; border-radius: 30px; }
+    .events-cta { text-align: center; }
+    .events-cta p { color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 1.15rem; }
+
+    /* Songs Section */
+    .songs { padding: 8rem 2rem; position: relative; }
+    .songs-container { max-width: 1200px; margin: 0 auto; }
+    .songs-header { text-align: center; margin-bottom: 4rem; }
+    .songs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; }
+    .songs-column { background: rgba(18, 10, 31, 0.5); border: 1px solid rgba(168, 85, 247, 0.1); border-radius: 24px; padding: 2rem; backdrop-filter: blur(10px); }
+    .songs-column h3 { font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem; padding-bottom: 1rem; border-bottom: 1px solid rgba(168, 85, 247, 0.1); }
+    .song-list { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; }
+    .song-item { display: flex; align-items: center; gap: 1rem; padding: 0.875rem 1rem; border-radius: 12px; background: rgba(168, 85, 247, 0.03); border: 1px solid transparent; transition: all 0.3s ease; }
+    .song-item:hover { transform: translateX(8px); background: rgba(168, 85, 247, 0.08); border-color: rgba(168, 85, 247, 0.2); }
+    .song-rank { width: 32px; height: 32px; border-radius: 8px; background: linear-gradient(135deg, var(--purple-600), var(--purple-500)); display: flex; align-items: center; justify-content: center; font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 0.9rem; flex-shrink: 0; }
+    .song-info { flex: 1; min-width: 0; }
+    .song-title { font-weight: 600; margin-bottom: 0.15rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .song-artist { font-size: 0.8rem; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .new-badge { padding: 0.25rem 0.75rem; border-radius: 100px; background: linear-gradient(135deg, var(--purple-600), var(--purple-500)); font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: white; flex-shrink: 0; }
+
+    /* Services Section */
+    .services { padding: 8rem 2rem; background: linear-gradient(180deg, var(--dark-bg) 0%, var(--dark-surface) 100%); }
+    .services-container { max-width: 1200px; margin: 0 auto; }
+    .services-header { text-align: center; margin-bottom: 4rem; }
+    .services-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; }
+    .service-card { padding: 2.5rem 1.5rem; border-radius: 24px; background: rgba(18, 10, 31, 0.6); border: 1px solid rgba(168, 85, 247, 0.1); text-align: center; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); position: relative; overflow: hidden; backdrop-filter: blur(10px); }
+    .service-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--purple-600), var(--purple-400)); transform: scaleX(0); transition: transform 0.4s ease; }
+    .service-card::after { content: ''; position: absolute; inset: 0; background: radial-gradient(circle at 50% 0%, rgba(168, 85, 247, 0.1) 0%, transparent 60%); opacity: 0; transition: opacity 0.4s ease; }
+    .service-card:hover { transform: translateY(-12px); border-color: rgba(168, 85, 247, 0.3); box-shadow: 0 25px 60px rgba(168, 85, 247, 0.2); }
+    .service-card:hover::before { transform: scaleX(1); }
+    .service-card:hover::after { opacity: 1; }
+    .service-icon { font-size: 3.5rem; margin-bottom: 1.5rem; display: block; position: relative; z-index: 1; }
+    .service-card h3 { font-size: 1.35rem; font-weight: 700; margin-bottom: 0.75rem; position: relative; z-index: 1; }
+    .service-card p { color: var(--text-secondary); font-size: 0.9rem; line-height: 1.6; position: relative; z-index: 1; }
+
+    /* Areas Section */
+    .areas { padding: 6rem 2rem; text-align: center; }
+    .areas-container { max-width: 900px; margin: 0 auto; }
+    .areas h2 { font-size: clamp(2rem, 4vw, 3rem); font-weight: 800; margin-bottom: 1rem; }
+    .areas > .areas-container > p { color: var(--text-secondary); font-size: 1.1rem; margin-bottom: 2.5rem; }
+    .areas-list { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.75rem; }
+    .area-tag { padding: 0.75rem 1.5rem; border-radius: 100px; background: rgba(168, 85, 247, 0.08); border: 1px solid rgba(168, 85, 247, 0.15); font-size: 0.9rem; font-weight: 500; transition: all 0.3s ease; cursor: default; }
+    .area-tag:hover { background: rgba(168, 85, 247, 0.15); border-color: var(--purple-500); color: var(--purple-300); transform: translateY(-3px); box-shadow: 0 10px 30px rgba(168, 85, 247, 0.15); }
+
+    /* Reviews Section */
+    .reviews { padding: 5rem 2rem; background: var(--dark-surface); }
+    .reviews-container { max-width: 600px; margin: 0 auto; text-align: center; }
+    .reviews-stars { font-size: 2rem; margin-bottom: 1rem; animation: starPulse 2s ease-in-out infinite; }
+    @keyframes starPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+    .reviews h3 { font-size: 1.75rem; font-weight: 700; margin-bottom: 0.75rem; }
+    .reviews p { color: var(--text-secondary); margin-bottom: 2rem; }
+    .review-buttons { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+    .review-btn { padding: 0.875rem 1.75rem; border-radius: 100px; text-decoration: none; font-weight: 600; transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 0.5rem; }
+    .review-btn-read { background: rgba(168, 85, 247, 0.1); color: var(--text-primary); border: 1px solid rgba(168, 85, 247, 0.2); }
+    .review-btn-read:hover { background: rgba(168, 85, 247, 0.2); border-color: var(--purple-500); transform: translateY(-2px); }
+    .review-btn-leave { background: linear-gradient(135deg, var(--purple-600), var(--purple-500)); color: white; border: none; }
+    .review-btn-leave:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(168, 85, 247, 0.4); }
+
+    /* Contact Section */
+    .contact { padding: 8rem 2rem; position: relative; }
+    .contact::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--purple-600), transparent); }
+    .contact-container { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1.2fr; gap: 4rem; }
+    .contact-info h2 { font-size: clamp(2.5rem, 5vw, 3.5rem); font-weight: 800; margin-bottom: 1.5rem; line-height: 1.1; }
+    .contact-info > p { color: var(--text-secondary); font-size: 1.1rem; margin-bottom: 2.5rem; line-height: 1.7; }
+    .contact-methods { display: flex; flex-direction: column; gap: 1rem; }
+    .contact-method { display: flex; align-items: center; gap: 1.25rem; padding: 1.25rem 1.5rem; border-radius: 20px; background: rgba(168, 85, 247, 0.05); border: 1px solid rgba(168, 85, 247, 0.1); transition: all 0.4s ease; text-decoration: none; color: inherit; }
+    .contact-method:hover { background: rgba(168, 85, 247, 0.1); border-color: rgba(168, 85, 247, 0.3); transform: translateX(10px); box-shadow: 0 10px 40px rgba(168, 85, 247, 0.1); }
+    .contact-method-icon { width: 55px; height: 55px; border-radius: 16px; background: linear-gradient(135deg, var(--purple-600), var(--purple-500)); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; flex-shrink: 0; }
+    .contact-method-text h4 { font-weight: 600; margin-bottom: 0.25rem; }
+    .contact-method-text p { color: var(--text-secondary); font-size: 0.9rem; }
+    .contact-form-wrapper { padding: 3rem; border-radius: 32px; background: rgba(18, 10, 31, 0.7); border: 1px solid rgba(168, 85, 247, 0.15); backdrop-filter: blur(20px); position: relative; overflow: hidden; }
+    .contact-form-wrapper::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--purple-600), var(--purple-400), var(--purple-600)); }
+    .contact-form h3 { font-size: 1.75rem; font-weight: 700; margin-bottom: 2rem; }
+    .form-group { margin-bottom: 1.25rem; }
+    .form-group label { display: block; margin-bottom: 0.5rem; font-size: 0.85rem; font-weight: 500; color: var(--text-secondary); }
+    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 1rem 1.25rem; border-radius: 14px; border: 1px solid rgba(168, 85, 247, 0.15); background: rgba(10, 5, 16, 0.8); color: var(--text-primary); font-family: 'Outfit', sans-serif; font-size: 1rem; transition: all 0.3s ease; }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: var(--purple-500); box-shadow: 0 0 0 4px rgba(168, 85, 247, 0.1); }
+    .form-group input::placeholder, .form-group textarea::placeholder { color: rgba(255, 255, 255, 0.3); }
+    .form-group textarea { min-height: 120px; resize: vertical; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .submit-btn { width: 100%; padding: 1.25rem; border-radius: 14px; background: linear-gradient(135deg, var(--purple-600), var(--purple-500)); color: white; font-weight: 700; font-size: 1.1rem; border: none; cursor: pointer; transition: all 0.4s ease; position: relative; overflow: hidden; }
+    .submit-btn::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent); transition: left 0.5s ease; }
+    .submit-btn:hover { transform: translateY(-2px); box-shadow: 0 15px 40px rgba(168, 85, 247, 0.4); }
+    .submit-btn:hover::before { left: 100%; }
+
+    /* Footer */
+    footer { padding: 5rem 2rem 2rem; background: var(--dark-bg); border-top: 1px solid rgba(168, 85, 247, 0.1); }
+    .footer-container { max-width: 1200px; margin: 0 auto; }
+    .footer-content { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 3rem; margin-bottom: 3rem; }
+    .footer-brand .logo-img { height: 70px; margin-bottom: 1.5rem; }
+    .footer-brand p { color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 1.5rem; max-width: 300px; line-height: 1.7; }
+    .social-links { display: flex; gap: 0.75rem; }
+    .social-link { width: 44px; height: 44px; border-radius: 12px; background: rgba(168, 85, 247, 0.1); border: 1px solid rgba(168, 85, 247, 0.15); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; transition: all 0.3s ease; text-decoration: none; }
+    .social-link:hover { background: var(--purple-600); border-color: var(--purple-500); transform: translateY(-3px); box-shadow: 0 10px 30px rgba(168, 85, 247, 0.3); }
+    .footer-column h4 { font-size: 1rem; font-weight: 700; margin-bottom: 1.5rem; color: var(--purple-300); }
+    .footer-column ul { list-style: none; }
+    .footer-column li { margin-bottom: 0.75rem; }
+    .footer-column a { color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; transition: all 0.3s ease; display: inline-block; }
+    .footer-column a:hover { color: var(--purple-400); transform: translateX(5px); }
+    .footer-bottom { padding-top: 2rem; border-top: 1px solid rgba(168, 85, 247, 0.1); display: flex; justify-content: space-between; align-items: center; }
+    .footer-bottom p { color: var(--text-secondary); font-size: 0.85rem; }
+    .footer-links { display: flex; gap: 2rem; }
+    .footer-links a { color: var(--text-secondary); text-decoration: none; font-size: 0.85rem; transition: color 0.3s ease; }
+    .footer-links a:hover { color: var(--purple-400); }
+
+    /* Responsive */
+    @media (max-width: 1024px) { .services-grid { grid-template-columns: repeat(2, 1fr); } .footer-content { grid-template-columns: 1fr 1fr; gap: 2rem; } .about-container { grid-template-columns: 1fr; gap: 4rem; } .about-visual { height: 400px; order: -1; } }
+    @media (max-width: 768px) { .nav-links { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(3, 1, 8, 0.98); flex-direction: column; padding: 6rem 2rem 2rem; gap: 1rem; backdrop-filter: blur(20px); } .nav-links.active { display: flex; } .nav-links a { font-size: 1.25rem; padding: 1rem; } .mobile-menu { display: flex; } .stats-container { grid-template-columns: repeat(2, 1fr); } .songs-grid { grid-template-columns: 1fr; } .services-grid { grid-template-columns: 1fr; } .contact-container { grid-template-columns: 1fr; } .form-row { grid-template-columns: 1fr; } .footer-content { grid-template-columns: 1fr; text-align: center; } .footer-brand p { max-width: 100%; } .social-links { justify-content: center; } .footer-bottom { flex-direction: column; gap: 1rem; text-align: center; } .hero-buttons { flex-direction: column; align-items: center; } .btn { width: 100%; max-width: 300px; text-align: center; } .about-visual { height: 350px; } }
+  </style>
+</head>
+<body>
+  <div class="bg-animation"><div class="orb orb-1"></div><div class="orb orb-2"></div><div class="orb orb-3"></div></div>
+  <div class="grid-overlay"></div>
+
+  <nav id="navbar">
+    <div class="nav-container">
+      <a href="#" class="logo"><img src="puklogo.png" alt="PopUp Karaoke Logo" class="logo-img"></a>
+      <ul class="nav-links" id="navLinks">
+        <li><a href="#home">Home</a></li>
+        <li><a href="#about">About</a></li>
+        <li><a href="#events">Events</a></li>
+        <li><a href="#songs">Top Songs</a></li>
+        <li><a href="#services">Services</a></li>
+        <li><a href="#contact">Contact</a></li>
+        <li><a href="https://my-store-679618.creator-spring.com" target="_blank">Shop</a></li>
+        <li><a href="https://square.link/u/CmsBTgrE?src=sheet" class="nav-cta">Book & Pay</a></li>
+      </ul>
+      <div class="mobile-menu" id="mobileMenu"><span></span><span></span><span></span></div>
+    </div>
+  </nav>
+
+  <section class="hero" id="home">
+    <span class="floating-element">🎤</span><span class="floating-element">🎵</span><span class="floating-element">🎶</span><span class="floating-element">✨</span>
+    <div class="hero-content">
+      <span class="hero-badge">NW Indiana & Chicagoland's Premier Mobile Karaoke</span>
+      <h1><span class="line-1">GET READY</span><span class="line-2">TO SING!</span></h1>
+      <p class="hero-description">High-energy karaoke entertainment for all occasions. Professional host, 60,000+ songs, and concert-quality sound—we bring the party to you!</p>
+      <div class="hero-buttons">
+        <a href="#contact" class="btn btn-primary">🎤 Book Your Event</a>
+        <a href="#about" class="btn btn-secondary">Learn More</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="stats">
+    <div class="stats-container">
+      <div class="stat-item"><div class="stat-number">60K+</div><div class="stat-label">Songs</div></div>
+      <div class="stat-item"><div class="stat-number">2020</div><div class="stat-label">Established</div></div>
+      <div class="stat-item"><div class="stat-number">5★</div><div class="stat-label">Rating</div></div>
+      <div class="stat-item"><div class="stat-number">100%</div><div class="stat-label">Good Times</div></div>
+    </div>
+  </section>
+
+  <section class="about" id="about">
+    <div class="about-container">
+      <div class="about-visual">
+        <div class="about-card about-card-1"><h4>🎵 Pro Equipment</h4><p>Concert-quality sound systems and professional lighting for the ultimate karaoke experience.</p></div>
+        <div class="about-card about-card-2"><h4>🎤 Pro Host</h4><p>Our experienced hosts keep the energy high and ensure everyone has a blast!</p></div>
+        <div class="about-card about-card-3"><h4>60K+</h4><p>Songs to choose from</p></div>
+      </div>
+      <div class="about-text">
+        <span class="section-label">Our Story</span>
+        <h2 class="section-title">More Than Just Karaoke</h2>
+        <p>Established in 2020, PopUp Karaoke started as a hobby and evolved into the premier mobile karaoke and event entertainment service for Northwest Indiana and Chicagoland.</p>
+        <p>We specialize in high-energy fun for all occasions—from corporate parties and team-building events to weddings and birthday celebrations. Don't just book a booth—book an unforgettable show!</p>
+        <ul class="feature-list">
+          <li><span class="feature-icon">🎤</span><span>Professional Host & MC</span></li>
+          <li><span class="feature-icon">🔊</span><span>Concert-Quality Sound</span></li>
+          <li><span class="feature-icon">📚</span><span>60,000+ Song Library</span></li>
+          <li><span class="feature-icon">🚚</span><span>We Come to You</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="events" id="events">
+    <div class="events-container">
+      <div class="events-header">
+        <span class="section-label">Where To Find Us</span>
+        <h2 class="section-title">Upcoming Events</h2>
+        <p class="events-subtitle">Check out our calendar for public karaoke nights at venues near you!</p>
+      </div>
+      <div class="events-calendar">
+        <video autoplay loop muted playsinline class="calendar-video">
+          <source src="https://www.dropbox.com/scl/fi/t7duvmtahgnxw6wdtqqw9/Jan_2026.mp4?rlkey=m1f0578u65u3sfyx5t86atytc&st=lf4t7xmg&raw=1" type="video/mp4">
+        </video>
+      </div>
+      <div class="events-cta">
+        <p>Want to book PopUp Karaoke for your venue or private event?</p>
+        <a href="#contact" class="btn btn-primary">🎉 Book Now</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="songs" id="songs">
+    <div class="songs-container">
+      <div class="songs-header">
+        <span class="section-label">What's Hot</span>
+        <h2 class="section-title">Top Songs & New Additions</h2>
+      </div>
+      <div class="songs-grid">
+        <div class="songs-column">
+          <h3>🔥 Top 10 This Month</h3>
+          <ul class="song-list">
+            <li class="song-item"><span class="song-rank">1</span><div class="song-info"><div class="song-title">Tennessee Whiskey</div><div class="song-artist">Chris Stapleton</div></div></li>
+            <li class="song-item"><span class="song-rank">2</span><div class="song-info"><div class="song-title">Picture</div><div class="song-artist">Kid Rock & Sheryl Crow</div></div></li>
+            <li class="song-item"><span class="song-rank">3</span><div class="song-info"><div class="song-title">Creep</div><div class="song-artist">Radiohead</div></div></li>
+            <li class="song-item"><span class="song-rank">4</span><div class="song-info"><div class="song-title">Friends in Low Places</div><div class="song-artist">Garth Brooks</div></div></li>
+            <li class="song-item"><span class="song-rank">5</span><div class="song-info"><div class="song-title">Neon Moon</div><div class="song-artist">Brooks & Dunn</div></div></li>
+            <li class="song-item"><span class="song-rank">6</span><div class="song-info"><div class="song-title">Dreams</div><div class="song-artist">Fleetwood Mac</div></div></li>
+            <li class="song-item"><span class="song-rank">7</span><div class="song-info"><div class="song-title">Take Me Home, Country Roads</div><div class="song-artist">John Denver</div></div></li>
+            <li class="song-item"><span class="song-rank">8</span><div class="song-info"><div class="song-title">Pink Pony Club</div><div class="song-artist">Chappell Roan</div></div></li>
+            <li class="song-item"><span class="song-rank">9</span><div class="song-info"><div class="song-title">Before He Cheats</div><div class="song-artist">Carrie Underwood</div></div></li>
+            <li class="song-item"><span class="song-rank">10</span><div class="song-info"><div class="song-title">Sweet Caroline</div><div class="song-artist">Neil Diamond</div></div></li>
+          </ul>
+        </div>
+        <div class="songs-column">
+          <h3>✨ Latest Additions</h3>
+          <ul class="song-list">
+            <li class="song-item"><div class="song-info"><div class="song-title">Always Been You</div><div class="song-artist">Jessie Murph</div></div><span class="new-badge">New</span></li>
+            <li class="song-item"><div class="song-info"><div class="song-title">Guilty</div><div class="song-artist">Teddy Swims</div></div><span class="new-badge">New</span></li>
+            <li class="song-item"><div class="song-info"><div class="song-title">Blue Jean Baby</div><div class="song-artist">Zach Bryan</div></div><span class="new-badge">New</span></li>
+            <li class="song-item"><div class="song-info"><div class="song-title">Gorgeous</div><div class="song-artist">Kane Brown</div></div><span class="new-badge">New</span></li>
+            <li class="song-item"><div class="song-info"><div class="song-title">Kitchen</div><div class="song-artist">SZA</div></div><span class="new-badge">New</span></li>
+            <li class="song-item"><div class="song-info"><div class="song-title">Holy Roller</div><div class="song-artist">Spiritbox</div></div><span class="new-badge">New</span></li>
+            <li class="song-item"><div class="song-info"><div class="song-title">Se Preparo</div><div class="song-artist">Ozuna</div></div><span class="new-badge">New</span></li>
+            <li class="song-item"><div class="song-info"><div class="song-title">The Pass</div><div class="song-artist">Rush</div></div><span class="new-badge">New</span></li>
+            <li class="song-item"><div class="song-info"><div class="song-title">Love Has No Pride</div><div class="song-artist">Bonnie Raitt</div></div><span class="new-badge">New</span></li>
+            <li class="song-item"><div class="song-info"><div class="song-title">Wake Me Up</div><div class="song-artist">The Weeknd & Justice</div></div><span class="new-badge">New</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="services" id="services">
+    <div class="services-container">
+      <div class="services-header">
+        <span class="section-label">What We Do</span>
+        <h2 class="section-title">Events We Rock</h2>
+      </div>
+      <div class="services-grid">
+        <div class="service-card"><span class="service-icon">🎂</span><h3>Birthday Parties</h3><p>Make your celebration unforgettable with live karaoke entertainment for all ages.</p></div>
+        <div class="service-card"><span class="service-icon">💒</span><h3>Weddings</h3><p>Add an interactive entertainment experience your guests will never forget.</p></div>
+        <div class="service-card"><span class="service-icon">🏢</span><h3>Corporate Events</h3><p>Team building and company parties that bring everyone together through music.</p></div>
+        <div class="service-card"><span class="service-icon">🍺</span><h3>Bars & Breweries</h3><p>Weekly karaoke nights that keep customers coming back for more.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="areas">
+    <div class="areas-container">
+      <span class="section-label">Coverage Area</span>
+      <h2>We Bring the Party To You</h2>
+      <p>Serving Northwest Indiana, Chicagoland, and beyond</p>
+      <div class="areas-list">
+        <span class="area-tag">Chicago</span><span class="area-tag">Northwest Indiana</span><span class="area-tag">New Buffalo, MI</span><span class="area-tag">Gary</span><span class="area-tag">Hammond</span><span class="area-tag">Valparaiso</span><span class="area-tag">Crown Point</span><span class="area-tag">Merrillville</span><span class="area-tag">Michigan City</span><span class="area-tag">Schererville</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="reviews">
+    <div class="reviews-container">
+      <div class="reviews-stars">⭐⭐⭐⭐⭐</div>
+      <h3>What Our Customers Say</h3>
+      <p>Check out our Google reviews or share your experience!</p>
+      <div class="review-buttons">
+        <a href="https://www.google.com/maps/place/PopUp+Karaoke/@41.682024,-87.4688634,10z/data=!4m8!3m7!1s0x4561b481cf4c9fcb:0xf88d227eb9f6d888!8m2!3d41.682024!4d-87.4688634!9m1!1b1!16s%2Fg%2F11scznktf5?authuser=0&hl=en" target="_blank" class="review-btn review-btn-read">📖 Read Reviews</a>
+        <a href="https://g.page/r/CYjY9rl-Io34EAI/review" target="_blank" class="review-btn review-btn-leave">✍️ Leave a Review</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="contact" id="contact">
+    <div class="contact-container">
+      <div class="contact-info">
+        <span class="section-label">Get In Touch</span>
+        <h2>Ready to Book Your Unforgettable Event?</h2>
+        <p>Complete the form and we'll get right back to you, or reach out directly using the contact info below.</p>
+        <div class="contact-methods">
+          <a href="tel:219-758-1313" class="contact-method"><div class="contact-method-icon">📞</div><div class="contact-method-text"><h4>Call Us</h4><p>219.758.1313</p></div></a>
+          <a href="mailto:booking@popupkaraoke.net" class="contact-method"><div class="contact-method-icon">✉️</div><div class="contact-method-text"><h4>Email Us</h4><p>booking@popupkaraoke.net</p></div></a>
+          <div class="contact-method"><div class="contact-method-icon">📍</div><div class="contact-method-text"><h4>Service Area</h4><p>NW Indiana & Chicagoland</p></div></div>
+        </div>
+      </div>
+      <div class="contact-form-wrapper">
+        <form class="contact-form">
+          <h3>🎤 Book Your Party</h3>
+          <div class="form-row"><div class="form-group"><label>Your Name</label><input type="text" placeholder="John Doe" required></div><div class="form-group"><label>Email Address</label><input type="email" placeholder="john@example.com" required></div></div>
+          <div class="form-row"><div class="form-group"><label>Phone Number</label><input type="tel" placeholder="(219) 555-1234"></div><div class="form-group"><label>Event Type</label><select required><option value="">Select event type...</option><option>Birthday Party</option><option>Bars/Breweries</option><option>Private Party</option><option>Public/Corporate Event</option></select></div></div>
+          <div class="form-row"><div class="form-group"><label>Event Date</label><input type="date"></div><div class="form-group"><label>Expected Guests</label><select><option value="">Select range...</option><option>10-25 guests</option><option>25-50 guests</option><option>50-75 guests</option><option>75-100 guests</option><option>100-150 guests</option><option>150-200 guests</option><option>200+ guests</option></select></div></div>
+          <div class="form-group"><label>Tell Us About Your Event</label><textarea placeholder="Share any details about your event, venue, special requests, etc."></textarea></div>
+          <button type="submit" class="submit-btn">🎉 Let's Party!</button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="footer-container">
+      <div class="footer-content">
+        <div class="footer-brand"><a href="#"><img src="puklogo.png" alt="PopUp Karaoke Logo" class="logo-img"></a><p>NW Indiana & Chicagoland's premier mobile karaoke and event entertainment service. We bring the party to you!</p><div class="social-links"><a href="#" class="social-link">📘</a><a href="#" class="social-link">📸</a><a href="#" class="social-link">🎵</a></div></div>
+        <div class="footer-column"><h4>Quick Links</h4><ul><li><a href="#home">Home</a></li><li><a href="#about">About Us</a></li><li><a href="#events">Events</a></li><li><a href="#songs">Top Songs</a></li><li><a href="#services">Services</a></li><li><a href="#contact">Contact</a></li></ul></div>
+        <div class="footer-column"><h4>Services</h4><ul><li><a href="#services">Birthday Parties</a></li><li><a href="#services">Weddings</a></li><li><a href="#services">Corporate Events</a></li><li><a href="#services">Bars & Breweries</a></li></ul></div>
+        <div class="footer-column"><h4>Contact</h4><ul><li><a href="tel:219-758-1313">219.758.1313</a></li><li><a href="mailto:booking@popupkaraoke.net">booking@popupkaraoke.net</a></li><li><a href="https://square.link/u/CmsBTgrE?src=sheet">Make a Payment</a></li><li><a href="https://my-store-679618.creator-spring.com">Shop Merch</a></li></ul></div>
+      </div>
+      <div class="footer-bottom"><p>© 2025 PopUp Karaoke, LLC. All rights reserved.</p><div class="footer-links"><a href="#">Privacy Policy</a><a href="#">Terms of Service</a></div></div>
+    </div>
+  </footer>
+
+  <script>
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => navbar.classList.toggle('scrolled', window.scrollY > 50));
+    const mobileMenu = document.getElementById('mobileMenu');
+    const navLinks = document.getElementById('navLinks');
+    mobileMenu.addEventListener('click', () => navLinks.classList.toggle('active'));
+    document.querySelectorAll('.nav-links a').forEach(link => link.addEventListener('click', () => navLinks.classList.remove('active')));
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => { anchor.addEventListener('click', function(e) { e.preventDefault(); const target = document.querySelector(this.getAttribute('href')); if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' }); }); });
+    const observer = new IntersectionObserver((entries) => { entries.forEach((entry, index) => { if (entry.isIntersecting) { entry.target.style.transitionDelay = `${index * 0.1}s`; entry.target.classList.add('animate-in'); } }); }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+    document.querySelectorAll('.stat-item, .service-card, .song-item, .contact-method, .feature-list li').forEach(el => { el.style.opacity = '0'; el.style.transform = 'translateY(30px)'; el.style.transition = 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)'; observer.observe(el); });
+    document.head.insertAdjacentHTML('beforeend', `<style>.animate-in { opacity: 1 !important; transform: translateY(0) !important; }</style>`);
+  </script>
+</body>
+</html>
