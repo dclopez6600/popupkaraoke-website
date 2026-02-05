@@ -11,6 +11,21 @@ A modern, exciting website for PopUp Karaoke - NW Indiana & Chicagoland's premie
 - **Contact Form** - Easy booking form for customers
 - **Purple Theme** - Vibrant purple color scheme matching the brand
 
+## 🌐 Browser Compatibility
+
+Fully optimized and tested for:
+- **Google Chrome** (latest)
+- **Microsoft Edge** (latest)
+- **Safari** (macOS & iOS)
+- **Firefox** (latest)
+
+### Cross-Browser Features:
+- Vendor prefixes (-webkit-, -moz-, -ms-, -o-) for all CSS properties
+- CSS feature fallbacks for backdrop-filter, background-clip, etc.
+- Flexbox/Grid fallbacks for older browsers
+- Reduced motion support for accessibility
+- Form input appearance normalization
+
 ## 📱 Responsive Breakpoints
 
 - **1024px** - Tablet landscape adjustments
@@ -20,7 +35,8 @@ A modern, exciting website for PopUp Karaoke - NW Indiana & Chicagoland's premie
 
 ## 📁 Files
 
-- `popupkaraoke.html` - Main website file (single-page, self-contained)
+- `index.html` - Main website file (GitHub Pages homepage)
+- `popupkaraoke.html` - Backup copy
 - `puklogo.svg` - Logo with transparent background (SVG format, scalable)
 - `puklogo.png` - Logo with transparent background (PNG format)
 - `README.md` - This documentation file
